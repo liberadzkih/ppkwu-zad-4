@@ -32,9 +32,6 @@ import java.util.List;
  */
 @RestController
 public class VCard {
-    //https://adm.edu.p.lodz.pl/user/users.php?search=Nowak&x=10&y=15
-    //https://adm.edu.p.lodz.pl/user/users.php?search=Kowalski
-    //https://adm.edu.p.lodz.pl/user/users.php?search=Jacek+Kowalski
 
     @RequestMapping("VCard/{name}")
     public String getVCard(@PathVariable String name) throws IOException {
@@ -75,13 +72,11 @@ public class VCard {
         List<String> VCard = new ArrayList<>();
 
         for (int i = 0; i < listSize - 1; i++) {
-            String pic = "<img src='" + pictures.get(i) + "' width='100' height='100' border-radius='50%'>";
+            String pic = "<img src='" + pictures.get(i) + "'>";
             VCard.add(pic + "\t\t" + names.get(i) + "\n" + titles.get(i) + "\n" + extraInfo.get(i));
-            //VCard.add(pictures.get(i));
             VCard.add("<br></br>");
         }
 
-        //return userPicture.outerHtml() + userName.outerHtml() + userAcademicTitle.outerHtml();
         return VCard.toString().replace("[", "").replace("]", "").replace(",", "");
     }
 
