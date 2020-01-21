@@ -1,5 +1,6 @@
 package com.ppkwu.zad4;
 
+import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -8,10 +9,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -83,18 +82,27 @@ public class VCard {
     }
 
     @RequestMapping("VCard/{name}/{number}")
-    public String generateVCard(@PathVariable String name, @PathVariable int number) throws IOException {
+    public String generateVCard(@PathVariable String name, @PathVariable int number, HttpServletResponse response) throws IOException {
         String url = buildHttpPath(name);
         HashMap<String, List<String>> hashMap =  makeHashMap(url);
-        List<String> pictures = hashMap.get("pictures");
         List<String> names = hashMap.get("names");
         List<String> titles = hashMap.get("titles");
         List<String> extraInfo = hashMap.get("info");
-        generateCard(names.get(number), titles.get(number), extraInfo.get(number));
-        return names.get(number) + " VCard generated!";
+        try {
+            File file = generateCard(names.get(number), titles.get(number), extraInfo.get(number));
+            String filePathToBeServed = file.getAbsolutePath();
+            InputStream inputStream = new FileInputStream(file);
+            response.setContentType("application/force-download");
+            response.setHeader("Content-Disposition", "attachment; filename="+file.getName());
+            IOUtils.copy(inputStream, response.getOutputStream());
+            response.flushBuffer();
+            inputStream.close();
+        } catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
-    public void generateCard(String name, String title, String info) throws IOException {
+    public File generateCard(String name, String title, String info) throws IOException {
 
         String firstname = name.substring(0, name.indexOf(' '));
         String surname = name.substring(name.indexOf(' ')+1);
@@ -109,6 +117,7 @@ public class VCard {
         bufferedWriter.write("ORG:" + info + "\r\n");
         bufferedWriter.write("END:VCARD");
         bufferedWriter.close();
+        return file;
     }
 
     public String buildHttpPath(String name){
