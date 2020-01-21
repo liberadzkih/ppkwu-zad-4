@@ -82,7 +82,7 @@ public class VCard {
     }
 
     @RequestMapping("VCard/{name}/{number}")
-    public String generateVCard(@PathVariable String name, @PathVariable int number, HttpServletResponse response) throws IOException {
+    public void generateVCard(@PathVariable String name, @PathVariable int number, HttpServletResponse response) throws IOException {
         String url = buildHttpPath(name);
         HashMap<String, List<String>> hashMap =  makeHashMap(url);
         List<String> names = hashMap.get("names");
